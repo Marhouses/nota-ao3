@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>nota</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── fondo transparente para que AO3 se vea debajo del iframe ── */
+    html, body {
+      background: transparent;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-height: 420px;
+      padding: 1.5rem 1rem 2rem;
+      font-family: sans-serif;
+      overflow: hidden; /* sin scroll dentro del iframe */
+    }
+
+    .note-wrap {
+      position: relative;
+      width: 260px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .hint {
+      text-align: center;
+      font-size: 11px;
+      color: rgba(80,60,40,0.5);
+      margin-top: 8px;
+      font-style: italic;
+      transition: opacity 0.4s;
+    }
+
+    /* ══════════════════════════
+       NOTA DOBLADA
+       ══════════════════════════ */
+    .folded-note {
+      width: 260px;
+      height: 130px;
+      position: relative;
+    }
+
+    .paper-texture {
+      position: absolute;
+      inset: 0;
+      border-radius: 2px 2px 0 0;
+      overflow: hidden;
+      background-color: #f5f0e8;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent, transparent 23px,
+          rgba(100,130,180,0.18) 23px,
+          rgba(100,130,180,0.18) 24px
+        );
+      box-shadow:
+        inset 0 0 30px rgba(180,160,120,0.15),
+        2px 2px 8px rgba(0,0,0,0.22),
+        4px 4px 16px rgba(0,0,0,0.12);
+    }
+
+    /* línea roja margen */
+    .paper-texture::before {
+      content: '';
+      position: absolute;
+      left: 38px; top: 0; bottom: 0;
+      width: 1px;
+      background: rgba(200,80,80,0.35);
+    }
+
+    /* borde rasgado */
+    .torn-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: #f5f0e8;
+      clip-path: polygon(
+        0% 100%,1% 60%,2% 80%,4% 40%,5% 70%,7% 20%,8% 55%,
+        10% 10%,12% 50%,13% 30%,15% 70%,17% 15%,19% 60%,21% 35%,
+        23% 75%,25% 20%,27% 65%,29% 40%,31% 80%,33% 25%,35% 60%,
+        37% 45%,39% 80%,41% 30%,43% 65%,45% 50%,47% 85%,49% 30%,
+        51% 70%,53% 40%,55% 75%,57% 25%,59% 55%,61% 35%,63% 80%,
+        65% 20%,67% 60%,69% 40%,71% 70%,73% 30%,75% 65%,77% 45%,
+        79% 75%,81% 20%,83% 55%,85% 35%,87% 70%,89% 50%,91% 80%,
+        93% 25%,95% 60%,97% 40%,100% 70%,100% 100%
+      );
+    }
+
+    .hole {
+      position: absolute;
+      left: 14px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: rgba(160,140,110,0.25);
+      border: 1px solid rgba(120,100,70,0.30);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.15);
+      z-index: 4;
+    }
+
+    .fold-crease {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        transparent 5%,
+        rgba(140,120,90,0.5) 20%,
+        rgba(180,160,120,0.7) 50%,
+        rgba(140,120,90,0.5) 80%,
+        transparent 95%
+      );
+      box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    }
+
+    .flap-shadow {
+      position: absolute;
+      bottom: -8px; left: 4px; right: 4px;
+      height: 8px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.18), transparent);
+      border-radius: 0 0 2px 2px;
+    }
+
+    /* ══════════════════════════
+       NOTA ABIERTA
+       ══════════════════════════ */
+    .unfolded-note {
+      display: none;
+      width: 260px;
+      position: relative;
+      animation: unfold 0.45s cubic-bezier(0.22,0.61,0.36,1) forwards;
+    }
+
+    @keyframes unfold {
+      from { transform: scaleY(0.35) translateY(-28px); opacity: 0; }
+      to   { transform: scaleY(1)    translateY(0);     opacity: 1; }
+    }
+
+    .paper-full {
+      width: 100%;
+      background-color: #f5f0e8;
+      background-image:
+        repeating-linear-gradient(
+          0deg,
+          transparent, transparent 27px,
+          rgba(100,130,180,0.18) 27px,
+          rgba(100,130,180,0.18) 28px
+        );
+      box-shadow:
+        2px 4px 12px rgba(0,0,0,0.22),
+        4px 8px 24px rgba(0,0,0,0.12),
+        -1px -1px 4px rgba(0,0,0,0.06);
+      position: relative;
+      padding: 18px 18px 28px 50px;
+    }
+
+    /* línea roja */
+    .paper-full::before {
+      content: '';
+      position: absolute;
+      left: 38px; top: 0; bottom: 0;
+      width: 1px;
+      background: rgba(200,80,80,0.35);
+      z-index: 1;
+    }
+
+    /* pliegue central */
+    .paper-full::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        transparent 2%,
+        rgba(140,120,90,0.35) 15%,
+        rgba(170,150,110,0.5) 50%,
+        rgba(140,120,90,0.35) 85%,
+        transparent 98%
+      );
+      pointer-events: none;
+    }
+
+    .torn-top-full {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 6px;
+      background: #f5f0e8;
+      clip-path: polygon(
+        0% 100%,1% 50%,2% 75%,4% 30%,5% 65%,7% 15%,8% 55%,
+        10% 5%,12% 45%,14% 25%,16% 68%,18% 12%,20% 55%,22% 38%,
+        24% 72%,26% 18%,28% 62%,30% 42%,32% 78%,34% 22%,36% 58%,
+        38% 40%,40% 80%,42% 28%,44% 62%,46% 48%,48% 82%,50% 28%,
+        52% 68%,54% 38%,56% 72%,58% 22%,60% 52%,62% 32%,64% 78%,
+        66% 18%,68% 58%,70% 38%,72% 68%,74% 28%,76% 62%,78% 45%,
+        80% 72%,82% 18%,84% 52%,86% 32%,88% 68%,90% 48%,92% 78%,
+        94% 22%,96% 58%,98% 40%,100% 68%,100% 100%
+      );
+      z-index: 3;
+    }
+
+    .stain {
+      position: absolute;
+      width: 38px; height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(160,120,70,0.18);
+      background: radial-gradient(ellipse,rgba(160,120,70,0.07) 60%,transparent 80%);
+      top: 265px; right: 22px;
+      z-index: 1;
+      transform: rotate(-15deg);
+    }
+
+    .note-text {
+      font-family: 'Caveat', cursive;
+      font-size: 18.5px;
+      line-height: 28px;
+      color: #1a1008;
+      position: relative;
+      z-index: 2;
+      letter-spacing: 0.01em;
+      word-spacing: 1px;
+      filter: url(#ink);
+    }
+
+    .note-text .line { display: block; }
+
+    .signature-img {
+      display: block;
+      width: 110px;
+      margin-top: 6px;
+      margin-left: 30px;
+      position: relative;
+      z-index: 2;
+      filter: invert(1) opacity(0.82);
+      mix-blend-mode: multiply;
+    }
+
+    /* estados */
+    .note-wrap.open .folded-note   { display: none; }
+    .note-wrap.open .unfolded-note { display: block; }
+    .note-wrap.open .hint          { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <!-- filtro SVG para textura de tinta -->
+  <svg width="0" height="0" style="position:absolute;pointer-events:none">
+    <defs>
+      <filter id="ink" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="3" result="noise"/>
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.8"
+          xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="note-wrap" id="noteWrap" onclick="toggle()">
+
+    <!-- DOBLADA -->
+    <div class="folded-note">
+      <div class="paper-texture">
+        <div class="torn-top"></div>
+        <div class="hole" style="top:18px"></div>
+        <div class="hole" style="top:58px"></div>
+        <div class="hole" style="top:98px"></div>
+      </div>
+      <div class="fold-crease"></div>
+      <div class="flap-shadow"></div>
+    </div>
+
+    <!-- ABIERTA -->
+    <div class="unfolded-note">
+      <div class="paper-full">
+        <div class="torn-top-full"></div>
+        <div class="hole" style="top:28px"></div>
+        <div class="hole" style="top:84px"></div>
+        <div class="hole" style="top:140px"></div>
+        <div class="hole" style="top:196px"></div>
+        <div class="hole" style="top:252px"></div>
+        <div class="hole" style="top:308px"></div>
+        <div class="stain"></div>
+        <p class="note-text">
+          <span class="line">Gracias por lo de</span>
+          <span class="line">anoche, la pasé muy</span>
+          <span class="line">bien.</span>
+          <span class="line">&nbsp;</span>
+          <span class="line">Me marcho temprano</span>
+          <span class="line">para no confundir</span>
+          <span class="line">las cosas ni que</span>
+          <span class="line">esto pase a más.</span>
+          <span class="line">&nbsp;</span>
+          <span class="line">&nbsp;&nbsp;&nbsp;&nbsp;Nos vemos.</span>
+        </p>
+        <img class="signature-img" alt="firma"
+          src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCACDAOkDASIAAhEBAxEB/8QAGwABAAMBAQEBAAAAAAAAAAAAAAIEBQMBBgj/xAA6EAACAgEBBQYDBQcEAwAAAAAAAQIDEQQFEiExQRMiUWFxgRSRoRUjMlKxJDNUcoLB0ZKTosLS4fD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A/GQAAAAAAAAAAAAAAAABOqq22SjXXObfJRi2BAF+nY+0bW0tO445qTSa9uZ2WxtxY1Ot01MvyOS3kvdoDKBrfC7Hre7Zr52SXPdTX6Rkn8yMbNiQ4KnU2Lxsjl/8Zr9AMsGtLaGzl+72VGL6PeT/AFTJS23x7uh08V6cfpgDHBrfbc8Y+Doz48c/PnnzEdt2L8Wmqn/PKUsemW8AZINaW1dNZjtdApe8P/DP1PXZsi/O9CNWOu7KD+jmvoBkA1bNl1ThKem1KaisvLUkveLyl5tIzb6rKbHXZHEl75Xin1QEAAAAAAAAAAAANDSavT10QjLernHOXGiubfnl8V9QM86VUXW47KmyeXhbsWzUjtSEJYrjfe3ycnGGPaK/ucLNr3zTTqreVjvTsnj2lJoDitna3GZaeda8bO4vrgktnW7u9K7Sx9bo/wBiP2hqksQnXX511Ri16NLKI/H67+N1P+7L/IFjT7M7SxKWroVfWWWmvaSRrU7E0EOE+3slzWYyccf0r+5g/H67+N1P+7L/ACcJylOTlOTk3xbbyB9ZHTaOiSVVWlqljg7sp+veWfr8iE77JRUftbSwglxhX2ck35Oc2z5emHaWwryo7zSy+S8zvr1SuydVfZqUW8ZfFZaTeerx6cgNLUrZ9jj8RtS2+KeUnNpLySUXg5v7CgsrtJvwzKX9o8fcxwBrw1OxIZ/YrLM/mTWP+bPJbQ2cnirZcUvHfXH2cXgyQBrx2xRCO7DZ1KXmoP8A6nk9tctzZ+j89+tP9MGSANaO25ZWdnaDHXFX/s9e1K7u7uR0b6WQqhL/AKpr1TMgtaHRz1DU5d2vOM5WZeKWfq+S6gWr4UXaeVltkLJxjJq6qLjxWOEljjxlHjw5syzUvqnqF2Okr3q44U7M/dx8IqT6Z69X7EoaTSaKO/qpxlPGUpJ/SPBv1eF6gVNn6W66xWQlKqMXwmuefCKXFv0+g2rZGzUrdnvbqafHKTy3hNcHz6cM5wT1m0bLl2dUVVXjd6bzXhlJYXkkkUQAAAAAAAAAAAAAD2MpRkpRbTXJpngAAAAACVUJWWRrgsyk0kBZ0UYxrlOUsb2Y5TWVHHefq1hLxyyvfZK62VksJyfJckuiXkizq5qNMYVvuSWF47qfr1ll48kUwAAAAFmrQ6mcd+UOyr/Pa92PzfP2ArE6arbrFXVXKcn0ismnHZ+moirNROco9JT+7g/TPel7L3I36+iEOypr34flxuV+6XGXuwIaLR1/EQrn+0WOS3oV5lGC8ZNc/RfM0NRq9HRVGubjKe6ovd3Ztrwwu6o5zwy/TqYt+rvuh2cpqNaeVCCUY/JHADR1W1b7GlSlSksJ85L0fJeyRnylKUnKUnJvm2+J4AAAAAAAAAAAAAAAAAAAAAAAXdn14jK6XBSTgnjiljM2vRcP6kV6NPde2qq5SxzfRer6GlormrYUU0b8JTVSnupqUFxlzXXOfLgBl32O22U2sZ5JdF0Xsi3otm26iCnLehGX4cR3m1446LzZe1GzqdHGKhXXfa+KVtmOC5tpYSx4ttE1rNNpcSerslJpSnCt572OXdaW6uWFLw4AZj0Ek2+306q6WOxcV6c/bAUNBW8Od2ql4Vrcj83l/RHnb6St/daTtXn8V028+0cY+bPHtDVYxXZ2KzypiofpzA2tFpF8NG5wjpG+UYVd/Gfzzzh+mBb8Lvt16qNcnzs365zfD8zm2vVJHzk5SnJynJyk+bbyzwDYnotDOTlLV70m8t/EQbfz/wAkfsuibxTq3J9V9239JsyQBf1GytTW2oYta47qTUsfyySb9ig+Dwyxp9XfRHcjJSrzncmt6OfHHR+aOu0GroR1WN2Usc3xknni/Fpxaz14PnkCkAAAAAAAAAAAAAAAAAAAAAAEqoSsthXHG9KSis+YF6v7/Z1dGJxam1BufcfNybWOixl+hagnGFcdO5QjGOFJRbcU8NyXH8WHFf1Y6ZKernCFEY1t96O7DPSC5vy3pZfp6h6yFem3KHZvy4vMUlF9XnPHrjljL6gT2tq52S7BWykkkpty3s46Z646vq/JIzgAAAAAAAAABb1dUKdPCEo4sTSbT5tZcs+mUv6WT2dp1j4izEYx4x3llcOcmuqXh1eF4lfV3O+5zw1FcIpvOF/9xfm2BxAAAAAAAAAAAAAAAAAAAAAC3ooxjGVspYynFPhmKx3nx64eF5vyK1cJWTjCCzKTwkWtZNQqVdc04vuprPGCfr1llteSAr6i13XSswop8kui5JeyOYAAAAAAAAJVVztsVdcJTnJ4UYrLYES7s/Qu7765ONC45zjexzw+i8X09cJ9tNoaqY9vrLIuMXjdTys+Da5vyXu0cNdrZXRdVeY1efOWOWccEl0S4ANo6qN0lVSlGqPgsb2OXDwXTrxbfFlMAAAAAAAAAAAAAAAAAAAAAAAubPre5OzO7KX3cZNcIrDc5e0f1K99naWuSTUeUU3nCXBL5FrVNUabsuG9+7xwyscZP3lwT8IlEAAAABY0+jvvjvxhu15w5ze7H5sCudKKbr7OzprlZLGcRWTS+A0ulxLWW5eM7rzH6fifyivM53bSgq+yopi49N+CSXpFcP8AU5Ae0bMiodrfanFc1GSUfRzfD5ZJWa/TaeuVWkpjLK4vGIv1zxl74XkZ191t89+6yU5efT08DmB0vutvnv2zc2lhZ5JeCXReRzAAAAAAAAAAAAAAAAAAAAAAAAAA6ai6V9m/JRjwwoxWEl5I5gAAABb0mo01EXJ6XtrWuDnLhF9HjHH0Z7btLVzk5Kzs20lmPNLyb4r0TKYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/Z"
+        />
+      </div>
+    </div>
+
+    <p class="hint" id="hint">— clic para desdoblar —</p>
+  </div>
+
+  <script>
+    function toggle() {
+      var wrap = document.getElementById('noteWrap');
+      wrap.classList.toggle('open');
+      // ajusta la altura del iframe dinámicamente si está embebida
+      var h = wrap.offsetHeight + 80;
+      if (window.parent !== window) {
+        try { window.parent.postMessage({ iframeHeight: h }, '*'); } catch(e) {}
+      }
+    }
+  </script>
+</body>
+</html>
